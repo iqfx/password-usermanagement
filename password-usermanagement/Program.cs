@@ -25,6 +25,8 @@ else
     builder.Services.AddDbContext<DatabaseContext>(options =>
         options.UseSqlServer(builder.Configuration["UserManagement:ConnectionString"]));
 }
+
+
 // Configure RabbitMQ connection
 builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>(sp =>
 {
@@ -38,14 +40,18 @@ builder.Services.AddScoped<IRabbitMQPublish>(sp =>
     var config = sp.GetRequiredService<IRabbitMQConnection>();
     return new RabbitMQPublish(config);
 });
+
 builder.Services.AddScoped<IRabbitMQListener>(sp =>
 {
     var connection = sp.GetRequiredService<IRabbitMQConnection>();
     return new RabbitMQListener(connection);
 });
+builder.Services.AddHostedService<RabbitMQListener>();
 
 var app = builder.Build();
-
+using var scope = app.Services.CreateScope();
+var context = scope.ServiceProvider.GetService<DatabaseContext>();
+context.Database.EnsureCreated();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

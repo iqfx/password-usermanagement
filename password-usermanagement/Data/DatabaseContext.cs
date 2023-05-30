@@ -5,7 +5,7 @@ namespace password_usermanagement.Data;
 
 public class DatabaseContext : DbContext
 {
-    public virtual DbSet<Role> Roels { get; set; }
+    public virtual DbSet<Role> Roles { get; set; }
  
     public DatabaseContext(DbContextOptions<DatabaseContext> options): base(options)
     {

@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using password_usermanagement.Data;
 using password_usermanagement.Models;
 using password_usermanagement.Queue;
 
@@ -8,27 +10,23 @@ public class RoleService : IRoleService
 {
     private IRabbitMQPublish _publish;
     private IRabbitMQListener _listener;
+    private readonly DatabaseContext _context;
 
-    public RoleService(IRabbitMQPublish publish, IRabbitMQListener listener)
+    public RoleService(IRabbitMQPublish publish, IRabbitMQListener listener, DatabaseContext context)
     {
         _publish = publish;
         _listener = listener;
+        _context = context;
     }
 
-    private void HandleMessage(string message)
-    {
-        Console.WriteLine($"Received message: {message}");
-        // Perform additional processing
-    }
+
     public async Task<List<Role>> GetAll()
     {
-        Action<string> handler = HandleMessage;
-        await _listener.Subscribe("random", "test", "jemoeder", handler);
-
-        await _publish.Publish("hallo","test","jemoeder");
+        _listener.init("random", "test", "jemoeder");
+        await _publish.Publish("hallo2","test","jemoeder");
 
         Console.WriteLine("test");
-        throw new NotImplementedException();
+        return await _context.Roles.ToListAsync();
     }
 
     public async Task<Role> GetById(Guid id)

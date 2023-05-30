@@ -2,6 +2,6 @@
 
 public interface IRabbitMQListener
 {
-    public Task Subscribe<T>(string queueName, string exchangeName, string routingKey, Action<T> handler);
+    public void init(string queueName, string exchangeName, string routingKey);
 
 }
