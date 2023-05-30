@@ -5,7 +5,7 @@ using RabbitMQ.Client.Events;
 
 namespace password_usermanagement.Queue;
 
-public class RabbitMQConnection {
+public class RabbitMQConnection : IRabbitMQConnection {
     private readonly string _hostname;
     private readonly string _username;
     private readonly string _password;

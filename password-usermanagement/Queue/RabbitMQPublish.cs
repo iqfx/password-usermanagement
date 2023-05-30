@@ -4,16 +4,16 @@ using RabbitMQ.Client;
 
 namespace password_usermanagement.Queue;
 
-public class RabbitMQPublish
+public class RabbitMQPublish: IRabbitMQPublish
 {
-    private readonly RabbitMQConnection _connection;
+    private readonly IRabbitMQConnection _connection;
 
-    public RabbitMQPublish(RabbitMQConnection connection)
+    public RabbitMQPublish(IRabbitMQConnection connection)
     {
         _connection = connection;
     }
 
-    public void Publish<T>(T message, string exchangeName, string routingKey)
+    public async Task Publish<T>(T message, string exchangeName, string routingKey)
     {
         using (var channel = _connection.CreateModel())
         {

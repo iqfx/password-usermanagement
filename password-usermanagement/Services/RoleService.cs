@@ -6,16 +6,29 @@ namespace password_usermanagement.Services;
 
 public class RoleService : IRoleService
 {
-    private RabbitMQConnection _connection;
+    private IRabbitMQPublish _publish;
+    private IRabbitMQListener _listener;
 
-    public RoleService(RabbitMQConnection connection)
+    public RoleService(IRabbitMQPublish publish, IRabbitMQListener listener)
     {
-        _connection = connection;
+        _publish = publish;
+        _listener = listener;
+    }
+
+    private void HandleMessage(string message)
+    {
+        Console.WriteLine($"Received message: {message}");
+        // Perform additional processing
     }
     public async Task<List<Role>> GetAll()
     {
-        throw new NotImplementedException();
+        Action<string> handler = HandleMessage;
+        await _listener.Subscribe("random", "test", "jemoeder", handler);
 
+        await _publish.Publish("hallo","test","jemoeder");
+
+        Console.WriteLine("test");
+        throw new NotImplementedException();
     }
 
     public async Task<Role> GetById(Guid id)
