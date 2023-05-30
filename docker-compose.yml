@@ -1,0 +1,20 @@
+version: "3"
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672" # RabbitMQ default port
+      - "15672:15672" # RabbitMQ management console
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest # RabbitMQ default username
+      - RABBITMQ_DEFAULT_PASS=guest # RabbitMQ default password
+    # volumes:
+    #   - rabbitmq_data:/var/lib/rabbitmq # Persist RabbitMQ data
+    networks:
+      - rabbitmq-network
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  rabbitmq-network:
