@@ -1,0 +1,40 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: password-usermanagement
+  labels:
+    app: password-usermanagement
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: password-usermanagement
+  template:
+    metadata:
+      labels:
+        app: password-usermanagement
+    spec:
+      containers:
+        - name: usermanagement-service-container
+          image: iqfx/password-usermanagement:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          env:
+            - name: UserManagement__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: connectionstring-usermanagement
+                  key: connectionstring
+      imagePullSecrets:
+        - name: dockerhub-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: usermanagement-service
+spec:
+  selector:
+    app: password-usermanagement
+  ports:
+    - port: 80
