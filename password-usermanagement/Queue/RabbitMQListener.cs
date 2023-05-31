@@ -5,12 +5,14 @@ using System.Text;
 
 namespace password_usermanagement.Queue
 {
-    public class RabbitMQListener : BackgroundService, IRabbitMQListener
+    public class RabbitMQListener : BackgroundService
     {
         private readonly IRabbitMQConnection _connection;
         private IModel _channel;
         private Action<string> _handler;
         private string _queueName = "random";
+        private string _exchangeName = "test";
+        private string _routingKey = "test2";
         private void HandleMessage(string message)
         {
             Console.WriteLine($"Received message: {message}");
@@ -22,18 +24,13 @@ namespace password_usermanagement.Queue
             _channel = _connection.CreateModel();
             _handler = HandleMessage;
         }
-
-        public void init(string queueName, string exchangeName, string routingKey)
-        {
-            _queueName = queueName;
-            _channel.ExchangeDeclare(exchangeName, ExchangeType.Direct, durable: true);
-            _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false);
-            _channel.QueueBind(queueName, exchangeName, routingKey);
-        }
+        
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             stoppingToken.ThrowIfCancellationRequested();  
-
+            _channel.ExchangeDeclare(_exchangeName, ExchangeType.Direct, durable: true);
+            _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
+            _channel.QueueBind(_queueName, _exchangeName, _routingKey);
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += async (model, eventArgs) =>
             {

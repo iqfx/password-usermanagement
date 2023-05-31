@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using password_usermanagement.Data;
 using password_usermanagement.Mappers;
+using password_usermanagement.Models;
 using password_usermanagement.Queue;
 using password_usermanagement.Services;
 
@@ -41,7 +42,7 @@ builder.Services.AddScoped<IRabbitMQPublish>(sp =>
     return new RabbitMQPublish(config);
 });
 
-builder.Services.AddScoped<IRabbitMQListener>(sp =>
+builder.Services.AddScoped<RabbitMQListener>(sp =>
 {
     var connection = sp.GetRequiredService<IRabbitMQConnection>();
     return new RabbitMQListener(connection);
@@ -51,6 +52,7 @@ builder.Services.AddHostedService<RabbitMQListener>();
 var app = builder.Build();
 using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetService<DatabaseContext>();
+
 context.Database.EnsureCreated();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

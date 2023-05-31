@@ -9,21 +9,18 @@ namespace password_usermanagement.Services;
 public class RoleService : IRoleService
 {
     private IRabbitMQPublish _publish;
-    private IRabbitMQListener _listener;
     private readonly DatabaseContext _context;
 
-    public RoleService(IRabbitMQPublish publish, IRabbitMQListener listener, DatabaseContext context)
+    public RoleService(IRabbitMQPublish publish, DatabaseContext context)
     {
         _publish = publish;
-        _listener = listener;
         _context = context;
     }
 
 
     public async Task<List<Role>> GetAll()
     {
-        _listener.init("random", "test", "jemoeder");
-        await _publish.Publish("hallo2","test","jemoeder");
+        await _publish.Publish("hallo2","test","test2");
 
         Console.WriteLine("test");
         return await _context.Roles.ToListAsync();
@@ -31,7 +28,7 @@ public class RoleService : IRoleService
 
     public async Task<Role> GetById(Guid id)
     {
-        throw new NotImplementedException();
+        return await _context.Roles.FindAsync(id) ?? throw new ArgumentException();;
     }
 
     public Task<IActionResult> AddRoleToUser(Guid userId, Guid roleId)

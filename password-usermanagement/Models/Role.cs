@@ -9,6 +9,11 @@ public class Role
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
     public string RoleName { get; set; }
-    public Guid UserId { get; set; }
-
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public ICollection<User> Users { get; set; }
+    public Role()
+    {
+        Users = new HashSet<User>();
+    }
 }
