@@ -1,7 +1,4 @@
-﻿using System.Text;
-using Newtonsoft.Json;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
+﻿using RabbitMQ.Client;
 
 namespace password_usermanagement.Queue;
 
@@ -39,4 +36,3 @@ public class RabbitMQConnection : IRabbitMQConnection {
         _connection?.Close();
     }
 }
-    

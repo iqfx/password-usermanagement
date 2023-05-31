@@ -2,7 +2,5 @@
 
 public interface IRabbitMQPublish
 {
-
-    public Task Publish<T>(T message, string exchangeName, string routingKey);
-
+    public Task Publish<T>(T message, string exchangeName, string routingKey, string? concurrencyId);
 }

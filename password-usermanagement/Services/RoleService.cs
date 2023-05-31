@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using password_usermanagement.Data;
 using password_usermanagement.Models;
@@ -10,17 +11,26 @@ public class RoleService : IRoleService
 {
     private IRabbitMQPublish _publish;
     private readonly DatabaseContext _context;
+    private IUserService _userService;
 
-    public RoleService(IRabbitMQPublish publish, DatabaseContext context)
+    public RoleService(IRabbitMQPublish publish, DatabaseContext context, IUserService userService)
     {
         _publish = publish;
         _context = context;
+        _userService = userService;
     }
 
 
+    public async Task<Role> Create(Role role)
+    {
+        _context.Roles.Add(role);
+        await _context.SaveChangesAsync();
+        return role;
+    }
+
     public async Task<List<Role>> GetAll()
     {
-        await _publish.Publish("hallo2","test","test2");
+        //await _publish.Publish("hallo2","test","test2", null);
 
         Console.WriteLine("test");
         return await _context.Roles.ToListAsync();
@@ -31,13 +41,41 @@ public class RoleService : IRoleService
         return await _context.Roles.FindAsync(id) ?? throw new ArgumentException();;
     }
 
-    public Task<IActionResult> AddRoleToUser(Guid userId, Guid roleId)
+    public async Task AddRoleToUser(string userId, Guid roleId)
     {
-        throw new NotImplementedException();
+        var role = await GetById(roleId);
+        User user = null;
+        try
+        {
+            user = await _userService.GetUserByUserId(userId);
+        }
+        catch (Exception e)
+        {
+            user = await _userService.SaveUser(userId);
+        }
+        user.Roles.Add(role);
+        await _context.SaveChangesAsync();
     }
 
-    public Task<IActionResult> RemoveRoleFromUser(Guid userId, Guid roleId)
+    public async Task RemoveRoleFromUser(string userId, Guid roleId)
     {
-        throw new NotImplementedException();
+        var role = await GetById(roleId);
+        User user = null;
+        try
+        {
+            user = await _userService.GetUserByUserId(userId);
+        }
+        catch (Exception e)
+        {
+            user = await _userService.SaveUser(userId);
+        }
+        user.Roles.Remove(role);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<Role>> GetRolesFromUser(string userId)
+    {
+        var user = await _userService.GetUserByUserId(userId);
+        return user.Roles.ToList();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using password_usermanagement.DTO;
+using password_usermanagement.Models;
 using password_usermanagement.Services;
 
 namespace password_usermanagement.Controllers;
@@ -29,16 +30,23 @@ public class RolesController : ControllerBase
     }
 
     [HttpPost("{roleId}/{userId}")]
-    public async Task<IActionResult> AddRoleToUser(Guid roleId, Guid userId)
+    public async Task<IActionResult> AddRoleToUser(Guid roleId, string userId)
     {
         await _roleService.AddRoleToUser(userId, roleId);
         return NoContent();
     }
-    
+
     [HttpDelete("{roleId}/{userId}")]
-    public async Task<IActionResult> Remove(Guid roleId, Guid userId)
+    public async Task<IActionResult> Remove(Guid roleId, string userId)
     {
         await _roleService.RemoveRoleFromUser(userId, roleId);
         return NoContent();
+    }
+
+    [HttpPost]
+    public async Task<RoleDTO> Create(RoleDTO role)
+    {
+        var roleModel = _mapper.Map<Role>(role);
+        return _mapper.Map<RoleDTO>(await _roleService.Create(roleModel));
     }
 }

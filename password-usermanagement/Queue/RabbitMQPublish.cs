@@ -13,7 +13,7 @@ public class RabbitMQPublish: IRabbitMQPublish
         _connection = connection;
     }
 
-    public async Task Publish<T>(T message, string exchangeName, string routingKey)
+    public async Task Publish<T>(T message, string exchangeName, string routingKey, string? concurrencyId)
     {
         using (var channel = _connection.CreateModel())
         {
@@ -21,6 +21,13 @@ public class RabbitMQPublish: IRabbitMQPublish
             var jsonMessage = JsonConvert.SerializeObject(message);
             var body = Encoding.UTF8.GetBytes(jsonMessage);
             var properties = channel.CreateBasicProperties();
+            if (concurrencyId != null)
+            {
+                properties.Headers = new Dictionary<string, object>
+                {
+                    { "concurrency-id", concurrencyId }
+                };
+            }
             properties.Persistent = true;
             channel.BasicPublish(exchangeName, routingKey, properties, body);
         }

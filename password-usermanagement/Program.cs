@@ -13,7 +13,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
 builder.Services.AddAutoMapper(typeof(RoleMapper));
 
 if (builder.Environment.IsDevelopment())
@@ -41,13 +42,18 @@ builder.Services.AddScoped<IRabbitMQPublish>(sp =>
     var config = sp.GetRequiredService<IRabbitMQConnection>();
     return new RabbitMQPublish(config);
 });
+builder.Services.AddScoped<IRoleService, RoleService>();
 
 builder.Services.AddScoped<RabbitMQListener>(sp =>
 {
     var connection = sp.GetRequiredService<IRabbitMQConnection>();
-    return new RabbitMQListener(connection);
+    var roleService = sp.GetRequiredService<IRoleService>();
+    var publisher = sp.GetRequiredService<IRabbitMQPublish>();
+
+    return new RabbitMQListener(connection, publisher, roleService);
 });
-builder.Services.AddHostedService<RabbitMQListener>();
+builder.Services.AddScoped<BackgroundService>(sp => sp.GetRequiredService<RabbitMQListener>());
+
 
 var app = builder.Build();
 using var scope = app.Services.CreateScope();
