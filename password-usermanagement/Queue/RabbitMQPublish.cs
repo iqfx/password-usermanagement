@@ -17,17 +17,17 @@ public class RabbitMQPublish: IRabbitMQPublish
     {
         using (var channel = _connection.CreateModel())
         {
-            channel.ExchangeDeclare(exchangeName, ExchangeType.Direct, durable: true);
             var jsonMessage = JsonConvert.SerializeObject(message);
             var body = Encoding.UTF8.GetBytes(jsonMessage);
             var properties = channel.CreateBasicProperties();
-            if (concurrencyId != null)
-            {
-                properties.Headers = new Dictionary<string, object>
-                {
-                    { "concurrency-id", concurrencyId }
-                };
-            }
+            properties.CorrelationId = concurrencyId;
+            // if (concurrencyId != null)
+            // {
+            //     properties.Headers = new Dictionary<string, object>
+            //     {
+            //         { "concurrency-id", concurrencyId }
+            //     };
+            // }
             properties.Persistent = true;
             channel.BasicPublish(exchangeName, routingKey, properties, body);
         }

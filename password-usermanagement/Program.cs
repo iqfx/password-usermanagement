@@ -14,6 +14,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<RoleService>();
 
 builder.Services.AddAutoMapper(typeof(RoleMapper));
 
@@ -30,29 +31,33 @@ else
 
 
 // Configure RabbitMQ connection
-builder.Services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>(sp =>
+builder.Services.AddScoped<RabbitMQConnection>(sp =>
 {
     var hostname = builder.Configuration["RabbitMQ:Uri"];
     var username = builder.Configuration["RabbitMQ:Username"];
     var password = builder.Configuration["RabbitMQ:Password"];
     return new RabbitMQConnection(hostname, username, password);
 });
-builder.Services.AddScoped<IRabbitMQPublish>(sp =>
+builder.Services.AddScoped<RabbitMQPublish>(sp =>
 {
-    var config = sp.GetRequiredService<IRabbitMQConnection>();
+    var config = sp.GetRequiredService<RabbitMQConnection>();
     return new RabbitMQPublish(config);
 });
-builder.Services.AddScoped<IRoleService, RoleService>();
 
-builder.Services.AddScoped<RabbitMQListener>(sp =>
-{
-    var connection = sp.GetRequiredService<IRabbitMQConnection>();
-    var roleService = sp.GetRequiredService<IRoleService>();
-    var publisher = sp.GetRequiredService<IRabbitMQPublish>();
-
-    return new RabbitMQListener(connection, publisher, roleService);
+// builder.Services.AddScoped<RabbitMQListener>(sp =>
+// {
+//     var connection = sp.GetRequiredService<IRabbitMQConnection>();
+//     var roleService = sp.GetRequiredService<IRoleService>();
+//     var publisher = sp.GetRequiredService<IRabbitMQPublish>();
+//
+//     return new RabbitMQListener(connection, publisher, roleService);
+// });
+builder.Services.AddHostedService(provider =>
+{ 
+    return new RabbitMQListener(provider);
 });
-builder.Services.AddScoped<BackgroundService>(sp => sp.GetRequiredService<RabbitMQListener>());
+
+//builder.Services.AddScoped<BackgroundService>(sp => sp.GetRequiredService<RabbitMQListener>());
 
 
 var app = builder.Build();

@@ -9,18 +9,15 @@ namespace password_usermanagement.Services;
 
 public class RoleService : IRoleService
 {
-    private IRabbitMQPublish _publish;
     private readonly DatabaseContext _context;
     private IUserService _userService;
 
-    public RoleService(IRabbitMQPublish publish, DatabaseContext context, IUserService userService)
+    public RoleService(DatabaseContext context, IUserService userService)
     {
-        _publish = publish;
         _context = context;
         _userService = userService;
     }
-
-
+    
     public async Task<Role> Create(Role role)
     {
         _context.Roles.Add(role);

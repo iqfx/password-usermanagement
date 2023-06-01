@@ -25,7 +25,7 @@ public class UserService:  IUserService
 
     public async Task<User> GetUserByUserId(string id)
     {
-        return await _context.Users.Where(u => u.userId == id).SingleOrDefaultAsync() ?? throw new ArgumentException();
+        return await _context.Users.Where(u => u.userId == id).Include(r => r.Roles).SingleOrDefaultAsync() ?? throw new ArgumentException();
     }
 
     public async Task<User> SaveUser(string userId)

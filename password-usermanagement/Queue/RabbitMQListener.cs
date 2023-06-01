@@ -8,59 +8,66 @@ namespace password_usermanagement.Queue
 {
     public class RabbitMQListener : BackgroundService
     {
-        private readonly IRabbitMQConnection _connection;
-        private IRoleService _roleService;
         private IModel _channel;
         private Action<string, string> _handler;
         private readonly string _queueName = "userRoleRequest";
         private readonly string _exchangeName = "authService";
         private readonly string _routingKey = "roleRequest";
-        private IRabbitMQPublish _publisher;
+        private IServiceProvider _provider;
 
-        public RabbitMQListener(IRabbitMQConnection connection, IRabbitMQPublish publisher, IRoleService roleService)
+        public RabbitMQListener(IServiceProvider provider)
         {
-            _connection = connection;
-            _channel = _connection.CreateModel();
             _handler = HandleMessage;
-            _roleService = roleService;
-            _publisher = publisher;
+            _provider = provider;
         }
         private async void HandleMessage(string message, string concurrencyId)
         {
             Console.WriteLine($"Received message: {message} with concurrency ID: {concurrencyId}");
+            using (var scope = _provider.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<RoleService>();
+                var publisher = scope.ServiceProvider.GetRequiredService<RabbitMQPublish>();
 
-            var roles = await _roleService.GetRolesFromUser(message);
-            var json = JsonConvert.SerializeObject(roles.ToString());
-            await _publisher.Publish(json, "authService", "roleResponse", concurrencyId);
-
+                var roles = await service.GetRolesFromUser(message);
+                
+                var json = JsonConvert.SerializeObject(roles.Select(p => new { p.RoleName }));
+                await publisher.Publish(json, "authService", "userRoleRequestResponse", concurrencyId);
+            }
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            
             stoppingToken.ThrowIfCancellationRequested();
-            _channel.ExchangeDeclare(_exchangeName, ExchangeType.Direct, durable: true);
-            _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
-            _channel.QueueBind(_queueName, _exchangeName, _routingKey);
-            var consumer = new EventingBasicConsumer(_channel);
-            consumer.Received += async (model, eventArgs) =>
+            using (var scope = _provider.CreateScope())
             {
-                var body = eventArgs.Body.ToArray();
-                var jsonMessage = Encoding.UTF8.GetString(body);
-                var message = JsonConvert.DeserializeObject(jsonMessage);
-                if (eventArgs.BasicProperties.Headers.TryGetValue("concurrency-id", out var concurrencyIdObj) &&
-                    concurrencyIdObj is byte[] concurrencyIdBytes)
-                {
-                    var concurrencyId = Encoding.UTF8.GetString(concurrencyIdBytes);
-                    _handler.Invoke(message.ToString(), concurrencyId);
-                }
-                else
-                {
-                    Console.WriteLine($"Received message: {message}");
-                }
-                _channel.BasicAck(eventArgs.DeliveryTag, multiple: false);
-            };
+                var connection = scope.ServiceProvider.GetRequiredService<RabbitMQConnection>();
+                _channel = connection.CreateModel();
 
-            _channel.BasicConsume(_queueName, autoAck: false, consumer);
-            await Task.Delay(-1);
+                _channel.ExchangeDeclare(_exchangeName, ExchangeType.Direct, durable: true);
+                _channel.QueueDeclare(_queueName, durable: true, exclusive: false, autoDelete: false);
+                _channel.QueueBind(_queueName, _exchangeName, _routingKey);
+                var consumer = new EventingBasicConsumer(_channel);
+                consumer.Received += async (model, eventArgs) =>
+                {
+                    var body = eventArgs.Body.ToArray();
+                    var jsonMessage = Encoding.UTF8.GetString(body);
+                    var message = JsonConvert.DeserializeObject(jsonMessage);
+                    if (eventArgs.BasicProperties.CorrelationId != null)
+                    {
+                        // var concurrencyId = Encoding.UTF8.GetString(concurrencyIdBytes);
+                        _handler.Invoke(message.ToString(), eventArgs.BasicProperties.CorrelationId);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Received message: {message}");
+                    }
+
+                    _channel.BasicAck(eventArgs.DeliveryTag, multiple: false);
+                };
+
+                _channel.BasicConsume(_queueName, autoAck: false, consumer);
+                await Task.Delay(-1);
+            }
         }
     }
 }
