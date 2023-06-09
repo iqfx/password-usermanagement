@@ -53,7 +53,7 @@ builder.Services.AddScoped<RabbitMQPublish>(sp =>
 //     return new RabbitMQListener(connection, publisher, roleService);
 // });
 builder.Services.AddHostedService(provider =>
-{ 
+{
     return new RabbitMQListener(provider);
 });
 
@@ -65,6 +65,7 @@ using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetService<DatabaseContext>();
 
 context.Database.EnsureCreated();
+context.Database.Migrate();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

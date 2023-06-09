@@ -17,7 +17,7 @@ public class RoleService : IRoleService
         _context = context;
         _userService = userService;
     }
-    
+
     public async Task<Role> Create(Role role)
     {
         _context.Roles.Add(role);
@@ -48,7 +48,7 @@ public class RoleService : IRoleService
         }
         catch (Exception e)
         {
-            user = await _userService.SaveUser(userId);
+            user = await _userService.SaveNewUser(userId);
         }
         user.Roles.Add(role);
         await _context.SaveChangesAsync();
@@ -64,7 +64,7 @@ public class RoleService : IRoleService
         }
         catch (Exception e)
         {
-            user = await _userService.SaveUser(userId);
+            user = await _userService.SaveNewUser(userId);
         }
         user.Roles.Remove(role);
         await _context.SaveChangesAsync();

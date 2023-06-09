@@ -8,5 +8,8 @@ public interface IUserService
     public Task<List<User>> GetAll();
     public Task<User> GetById(Guid id);
     public Task<User> GetUserByUserId(string id);
-    public Task<User> SaveUser(string userId);
+    public string GetUserIdFromHeader(string header);
+    public Task<User> SaveNewUser(string userId);
+    public Task<User> SaveUserSetPasswordSetToTrue(User userId);
+
 }
