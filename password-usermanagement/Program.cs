@@ -1,9 +1,7 @@
-using System.Configuration;
 using Microsoft.EntityFrameworkCore;
 using password_usermanagement.Configurations;
 using password_usermanagement.Data;
 using password_usermanagement.Mappers;
-using password_usermanagement.Models;
 using password_usermanagement.Queue;
 using password_usermanagement.Services;
 
@@ -50,7 +48,7 @@ builder.Services.AddHostedService(provider =>
 {
     return new RabbitMQListener(provider);
 });
-builder.Services.AddScoped<Auth0Configuration>(sp=>
+builder.Services.AddScoped<IAuth0Configuration>(sp=>
 {
     var domain = builder.Configuration["Auth0:domain"];
     var clientId = builder.Configuration["Auth0:Client_Id"];

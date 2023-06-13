@@ -22,8 +22,8 @@ public class UserService:  IUserService
     private readonly string _queueName = "userRoleRequestResponse";
     private readonly string _exchangeName = "authService";
     private readonly string _routingKey = "roleResponse";
-    private Auth0Configuration _auth0Config;
-    public UserService(DatabaseContext context, IRabbitMQPublish publisher,IRabbitMQConnection connection, Auth0Configuration auth0Domain)
+    private IAuth0Configuration _auth0Config;
+    public UserService(DatabaseContext context, IRabbitMQPublish publisher,IRabbitMQConnection connection, IAuth0Configuration auth0Domain)
     {
         _context = context;
         _client = new HttpClient();
@@ -98,16 +98,12 @@ public class UserService:  IUserService
             await _context.SaveChangesAsync();
             // await _publisher.Publish(userToDelete.id, "authService", "deleteRequest", null);
             string apiUrl = $"https://{_auth0Config.domain}/api/v2/users/{userToDelete.userId}";
-            var requestBody = new
-            {
-                client_id = _auth0Config.clientId,
-                client_secret = _auth0Config.clientSecret
-            };
+
 
             // var jsonRequestBody = JsonConvert.SerializeObject(requestBody);
             // var content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
             var accessToken = GetAccessToken(_auth0Config.clientId, _auth0Config.clientSecret);
-            
+
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
             HttpResponseMessage response = await _client.DeleteAsync(apiUrl);
@@ -120,9 +116,9 @@ public class UserService:  IUserService
             {
                 Console.WriteLine("User deleted successfully.");
             }
-            
+
         }
-        
+
     }
     private string GetAccessToken(string clientId, string clientSecret)
     {

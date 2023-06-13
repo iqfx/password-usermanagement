@@ -7,12 +7,14 @@ public class DatabaseContext : DbContext
 {
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<User> Users { get; set; }
-
+    public DbContext Instance => this;
 
     public DatabaseContext(DbContextOptions<DatabaseContext> options): base(options)
     {
-        
+
+
     }
+    public DatabaseContext(){}
     public override int SaveChanges()
     {
         var now = DateTime.UtcNow;
