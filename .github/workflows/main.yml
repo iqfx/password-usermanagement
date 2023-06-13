@@ -94,7 +94,7 @@ jobs:
           kubectl create secret generic connectionstring-usermanagement --from-literal=connectionstring='${{ secrets.PASSWORDS__CONNECTIONSTRING }}'
 
       - name: Deploy application
-        run: kubectl apply -f ./password-usermanagement/kubernetes/deployment.yml
+        run: kubectl apply -f ./password-usermanagement/Kubernetes/deployment.yml
 
       - name: Restart deployment
         run: kubectl rollout restart deploy password-app
