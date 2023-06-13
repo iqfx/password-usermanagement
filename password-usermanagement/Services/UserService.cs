@@ -94,11 +94,8 @@ public class UserService:  IUserService
     {
         if (true)
         {
-            _context.Users.Remove(userToDelete);
-            await _context.SaveChangesAsync();
-            // await _publisher.Publish(userToDelete.id, "authService", "deleteRequest", null);
+            await _publisher.Publish(userToDelete.userId, "authService", "deleteRequest", null);
             string apiUrl = $"https://{_auth0Config.domain}/api/v2/users/{userToDelete.userId}";
-
 
             // var jsonRequestBody = JsonConvert.SerializeObject(requestBody);
             // var content = new StringContent(jsonRequestBody, Encoding.UTF8, "application/json");
@@ -114,11 +111,11 @@ public class UserService:  IUserService
             }
             else
             {
+                _context.Users.Remove(userToDelete);
+                await _context.SaveChangesAsync();
                 Console.WriteLine("User deleted successfully.");
             }
-
         }
-
     }
     private string GetAccessToken(string clientId, string clientSecret)
     {

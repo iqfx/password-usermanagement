@@ -50,7 +50,7 @@ builder.Services.AddHostedService(provider =>
 });
 builder.Services.AddScoped<IAuth0Configuration>(sp=>
 {
-    var domain = builder.Configuration["Auth0:domain"];
+    var domain = builder.Configuration["Auth0:Domain"];
     var clientId = builder.Configuration["Auth0:Client_Id"];
     var clientSecret = builder.Configuration["Auth0:Client_Secret"];
 
@@ -60,14 +60,11 @@ builder.Services.AddScoped<IUserService>(sp =>
 {
     var conn = sp.GetService<RabbitMQConnection>();
     var pub = sp.GetService<RabbitMQPublish>();
-    var auth0 = sp.GetService<Auth0Configuration>();
+    var auth0 = sp.GetService<IAuth0Configuration>();
     var context = sp.GetService<DatabaseContext>();
     return new UserService(context, pub, conn, auth0);
 
 });
-
-//builder.Services.AddScoped<BackgroundService>(sp => sp.GetRequiredService<RabbitMQListener>());
-
 
 var app = builder.Build();
 using var scope = app.Services.CreateScope();

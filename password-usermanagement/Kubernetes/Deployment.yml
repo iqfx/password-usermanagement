@@ -26,8 +26,23 @@ spec:
                 secretKeyRef:
                   name: connectionstring-usermanagement
                   key: connectionstring
+            - name: RabbitMQ__Uri
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-uri-usermanagement
+                  key: uri
+            - name: RabbitMQ__Username
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-username-usermanagement
+                  key: username
+            - name: RabbitMQ__Password
+              valueFrom:
+                secretKeyRef:
+                  name: rabbitmq-password-usermanagement
+                  key: password
       imagePullSecrets:
-        - name: dockerhub-secret
+        - name: dockerhub-secret-usermanagement
 ---
 apiVersion: v1
 kind: Service

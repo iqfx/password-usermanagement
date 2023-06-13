@@ -9,10 +9,10 @@ namespace password_usermanagement.Controllers;
 [Route("[controller]")]
 public class RolesController : ControllerBase
 {
-    private IRoleService _roleService;
+    private RoleService _roleService;
     private IMapper _mapper;
 
-    public RolesController(IRoleService roleService, IMapper mapper)
+    public RolesController(RoleService roleService, IMapper mapper)
     {
         _roleService = roleService;
         _mapper = mapper;

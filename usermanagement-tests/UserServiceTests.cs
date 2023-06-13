@@ -117,12 +117,6 @@ public class Tests
         //arrange
         string userId = "fhjlkdsfjkhfgksdlajhgfh";
         Guid id = Guid.NewGuid();
-        User savedUser = new User
-        {
-            id = id,
-            userId = userId,
-            HasSetMasterPassword = false
-        };
         IEnumerable<User> userList = new List<User>()
         {
             new User
