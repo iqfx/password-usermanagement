@@ -37,4 +37,14 @@ public class UserController: ControllerBase
         await _userService.SaveUserSetPasswordSetToTrue(_mapper.Map<User>(user));
         return Ok();
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(string id)
+    {
+        var user = await _userService.GetUserByUserId(id);
+
+        var userActor = await _userService.GetUserByUserId(_userService.GetUserIdFromHeader(Request.Headers.Authorization));
+        await _userService.DeleteUser(user, userActor);
+        return Ok();
+    }
 }

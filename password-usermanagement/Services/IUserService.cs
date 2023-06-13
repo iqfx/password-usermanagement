@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using password_usermanagement.Models;
+using password_usermanagement.Queue;
 
 namespace password_usermanagement.Services;
 
@@ -11,5 +12,6 @@ public interface IUserService
     public string GetUserIdFromHeader(string header);
     public Task<User> SaveNewUser(string userId);
     public Task<User> SaveUserSetPasswordSetToTrue(User userId);
+    public Task DeleteUser(User userToDelete, User actor);
 
 }

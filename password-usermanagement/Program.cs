@@ -1,4 +1,6 @@
+using System.Configuration;
 using Microsoft.EntityFrameworkCore;
+using password_usermanagement.Configurations;
 using password_usermanagement.Data;
 using password_usermanagement.Mappers;
 using password_usermanagement.Models;
@@ -13,7 +15,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IUserService, UserService>();
+
 builder.Services.AddScoped<RoleService>();
 
 builder.Services.AddAutoMapper(typeof(RoleMapper));
@@ -44,17 +46,26 @@ builder.Services.AddScoped<RabbitMQPublish>(sp =>
     return new RabbitMQPublish(config);
 });
 
-// builder.Services.AddScoped<RabbitMQListener>(sp =>
-// {
-//     var connection = sp.GetRequiredService<IRabbitMQConnection>();
-//     var roleService = sp.GetRequiredService<IRoleService>();
-//     var publisher = sp.GetRequiredService<IRabbitMQPublish>();
-//
-//     return new RabbitMQListener(connection, publisher, roleService);
-// });
 builder.Services.AddHostedService(provider =>
 {
     return new RabbitMQListener(provider);
+});
+builder.Services.AddScoped<Auth0Configuration>(sp=>
+{
+    var domain = builder.Configuration["Auth0:domain"];
+    var clientId = builder.Configuration["Auth0:Client_Id"];
+    var clientSecret = builder.Configuration["Auth0:Client_Secret"];
+
+    return new Auth0Configuration(domain, clientId, clientSecret);
+});
+builder.Services.AddScoped<IUserService>(sp =>
+{
+    var conn = sp.GetService<RabbitMQConnection>();
+    var pub = sp.GetService<RabbitMQPublish>();
+    var auth0 = sp.GetService<Auth0Configuration>();
+    var context = sp.GetService<DatabaseContext>();
+    return new UserService(context, pub, conn, auth0);
+
 });
 
 //builder.Services.AddScoped<BackgroundService>(sp => sp.GetRequiredService<RabbitMQListener>());
