@@ -63,7 +63,7 @@ jobs:
           image: iqfx/password-usermanagement
           tags: latest
           registry: docker.io
-          dockerfile: Dockerfile
+          dockerfile: password-usermanagement/Dockerfile
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
